@@ -1481,6 +1481,55 @@ describe("createSpyObj", function() {
     });
 });
 
+describe('Spy with properties', function(){
+    class Foo {
+        prop1: string;
+        method1(test: string): string;
+    }
+    it('creates an object with spy properties if a second list is passed', function() {
+        var spyObj = env.createSpyObj<Foo>('base', ['method1'], ['prop1']);
+        env.createSpyObj<Foo>('base', 'method1'], ['prop2']); // $ExpectError
+
+        spyObj.prop1 = 'test';
+        spyObj.popp1 = 5;  // $ExpectError
+    });
+
+    it('creates an object with property names and return values if second object is passed', function() {
+        var spyObj = env.createSpyObj<Foo>('base', ['method1'], {
+            prop1: 'foo',
+        });
+        env.createSpyObj<Foo>('base', ['method1'], {
+            prop1: 'foo',
+        }); // $ExpectError
+
+        spyObj.prop1 = 'test';
+        spyObj.prop1 = 5;  // $ExpectError
+    });
+
+    it('allows base name to be ommitted when assigning methods and properties', function() {
+      var spyObj = env.createSpyObj<Foo>({ method1: "test" }, { prop1: "" });
+
+      spyObj.prop1 = 'test';
+      spyObj.prop1 = 5;  // $ExpectError
+    });
+});
+
+
+describe('spy strategys', function() {
+    beforeAll(function(){
+        var strategy = jasmine.createSpy('strategy').and.returnValue("test");
+        jasmine.addSpyStrategy('buzz',strategy);
+    })
+    it('should set the default spy strategy', function() {
+        jasmine.setDefaultSpyStrategy(and => and.returnValue(true));
+    });
+
+    it('set strategy for one test', function(){
+        var strategy = jasmine.createSpy('strategy').and.returnValue(42);
+        jasmine.addSpyStrategy('fizz',strategy);
+    })
+});
+
 describe('Static Matcher Test', function() {
     it('Falsy', () => {
       expect({ value: null }).toEqual(

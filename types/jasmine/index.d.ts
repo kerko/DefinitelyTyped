@@ -203,6 +203,10 @@ declare namespace jasmine {
         T extends undefined ?
             (ReadonlyArray<string> | { [methodName: string]: any }) :
             (ReadonlyArray<keyof T> | { [P in keyof T]?: T[P] extends Func ? ReturnType<T[P]> : any });
+    type SpyObjPropertyNames<T = unknown> =
+        unknown extends T ?
+            (ReadonlyArray<string> | { [propertyName: string]: any }) :
+            (ReadonlyArray<keyof T> | { [ P in keyof T ]?: T[P] } );
 
     /**
      * Configuration that can be used when configuring Jasmine via {@link jasmine.Env.configure}
@@ -259,11 +263,39 @@ declare namespace jasmine {
     function objectContaining<T>(sample: Partial<T>): ObjectContaining<T>;
     function createSpy(name?: string, originalFn?: Function): Spy;
 
-    function createSpyObj(baseName: string, methodNames: SpyObjMethodNames): any;
-    function createSpyObj<T>(baseName: string, methodNames: SpyObjMethodNames<T>): SpyObj<T>;
+    /**
+     * Create an object with multiple spys as its members.
+     * @param baseName Base name for the spies in the object.
+     * @param methodNames rray of method names to create spies for, or Object whose keys will be method names and values the returnValue.
+     * @param propertyNames Array of property names to create spies for, or Object whose keys will be propertynames and values the returnValue.
+     * @since 1.3.0
+     */
+    function createSpyObj(baseName: string, methodNames: SpyObjMethodNames, propertyNames?: SpyObjMethodNames): any;
 
-    function createSpyObj(methodNames: SpyObjMethodNames): any;
-    function createSpyObj<T>(methodNames: SpyObjMethodNames<T>): SpyObj<T>;
+    /**
+     * Create an object with multiple Spys as its members.
+     * @param baseName Base name for the spies in the object.
+     * @param methodNames rray of method names to create spies for, or Object whose keys will be method names and values the returnValue.
+     * @param propertyNames Array of property names to create spies for, or Object whose keys will be propertynames and values the returnValue.
+     * @since 1.3.0
+     */
+    function createSpyObj<T>(baseName: string, methodNames: SpyObjMethodNames<T>, propertyNames?: SpyObjMethodNames<T>): SpyObj<T>;
+
+    /**
+     * Create an object with multiple Spys as its members.
+     * @param methodNames rray of method names to create spies for, or Object whose keys will be method names and values the returnValue.
+     * @param propertyNames Array of property names to create spies for, or Object whose keys will be propertynames and values the returnValue.
+     * @since 1.3.0
+     */
+    function createSpyObj(methodNames: SpyObjMethodNames, propertyNames?: SpyObjMethodNames): any;
+
+    /**
+     * Create an object with multiple Spys as its members.
+     * @param methodNames rray of method names to create spies for, or Object whose keys will be method names and values the returnValue.
+     * @param propertyNames Array of property names to create spies for, or Object whose keys will be propertynames and values the returnValue.
+     * @since 1.3.0
+     */
+    function createSpyObj<T>(methodNames: SpyObjMethodNames<T>, propertyNames?: SpyObjMethodNames<T>): SpyObj<T>;
 
     function pp(value: any): string;
 
@@ -276,6 +308,25 @@ declare namespace jasmine {
     function stringMatching(str: string | RegExp): AsymmetricMatcher<string>;
 
     function formatErrorMsg(domain: string, usage: string): (msg: string) => string;
+
+    /**
+    * Add a custom spy strategy for the current scope of specs.
+    *
+    * _Note:_ This is only callable from within a beforeEach, it, or beforeAll.
+    * @param name The name of the strategy (i.e. what you call from `and`)
+    * @param factory Factory function that returns the plan to be executed.
+    * @since 3.5.0
+    */
+    function addSpyStrategy(name: String, factory: Spy): void;
+
+    /**
+    * Set the default spy strategy for the current scope of specs.
+    *
+    * _Note:_ This is only callable from within a beforeEach, it, or beforeAll.
+    * @param defaultStrategyFn a function that assigns a strategy
+    * @since 3.5.0
+    */
+    function setDefaultSpyStrategy(defaultStrategyFn: (and: SpyAnd) => Spy): void;
 
     interface Any extends AsymmetricMatcher<any> {
         (...params: any[]): any; // jasmine.Any can also be a function
